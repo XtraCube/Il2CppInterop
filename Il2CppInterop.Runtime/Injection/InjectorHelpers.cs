@@ -149,6 +149,16 @@ namespace Il2CppInterop.Runtime.Injection
         {
             static nint GetClassInitSubstitute()
             {
+                if (TryGetIl2CppExport(nameof(IL2CPP.il2cpp_array_new_specific), out nint arrayNewSpecific))
+                {
+                    // https://github.com/ByNameModding/BNM-Android/blob/3edeec43d74fc4392ba1b1eb9d5002e1b2ef2a67/src/Loading.cpp#L296
+                    var bnmClassInit = XrefScannerLowLevel.JumpTargets(XrefScannerLowLevel.JumpTargets(arrayNewSpecific).First()).First();
+                    if (bnmClassInit != IntPtr.Zero)
+                    {
+                        Logger.Instance.LogTrace("Used BNM Method to find Class::Init.");
+                        return bnmClassInit;
+                    }
+                }
                 if (TryGetIl2CppExport("mono_class_instance_size", out nint classInit))
                 {
                     Logger.Instance.LogTrace("Picked mono_class_instance_size as a Class::Init substitute");
