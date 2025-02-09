@@ -13,13 +13,10 @@ public static class XrefScannerLowLevel
             if (instruction.Mnemonic == Arm64Mnemonic.RET && !ignoreRetn)
                 yield break;
 
-            if (instruction is
-                {
-                    // Check if jump or call instruction
-                    Mnemonic: Arm64Mnemonic.B or Arm64Mnemonic.BC or Arm64Mnemonic.BR or Arm64Mnemonic.BL or Arm64Mnemonic.BLR,
-                    MnemonicConditionCode: Arm64ConditionCode.NONE,
-                    FinalOpConditionCode: Arm64ConditionCode.NONE
-                })
+            var jump = instruction.Mnemonic is Arm64Mnemonic.B or Arm64Mnemonic.BC or Arm64Mnemonic.BR;
+            var call = instruction.Mnemonic is Arm64Mnemonic.BL or Arm64Mnemonic.BLR;
+
+            if ((jump || call) && instruction.MnemonicConditionCode == Arm64ConditionCode.NONE && instruction.FinalOpConditionCode == Arm64ConditionCode.NONE)
             {
                 var target = XrefScanUtilFinder.ExtractTargetAddress(instruction);
                 yield return (IntPtr)target;
