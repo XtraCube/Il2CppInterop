@@ -843,7 +843,7 @@ public static unsafe partial class ClassInjector
             body.Emit(OpCodes.Add_Ovf_Un);
             var nativeType = parameterInfo.ParameterType.NativeType();
             body.Emit(OpCodes.Ldobj, typeof(IntPtr));
-            if (nativeType != typeof(IntPtr))
+            if (nativeType != typeof(IntPtr) && !nativeType.IsByRef) // if it's a byref, we already have the pointer i think?
                 body.Emit(OpCodes.Ldobj, nativeType);
         }
 

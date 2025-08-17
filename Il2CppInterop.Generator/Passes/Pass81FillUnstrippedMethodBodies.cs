@@ -42,6 +42,9 @@ public static class Pass81FillUnstrippedMethodBodies
             }
         }
 
+        StuffToProcess.Clear();
+        StuffToProcess.Capacity = 0;
+
         Logger.Instance.LogInformation("IL unstrip statistics: {MethodsSucceeded} successful, {MethodsFailed} failed", methodsSucceeded,
             methodsFailed);
     }
