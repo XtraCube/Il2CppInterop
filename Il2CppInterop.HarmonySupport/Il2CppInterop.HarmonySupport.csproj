@@ -16,6 +16,9 @@
       <Private>false</Private>
       <HintPath>..\Il2CppInterop.Runtime\Libs\Il2Cppmscorlib.dll</HintPath>
     </Reference>
+    <Reference Include="MonoMod.RuntimeDetour">
+      <HintPath>..\..\MonoMod\artifacts\bin\MonoMod.RuntimeDetour\$(Configuration.ToLower())_net6.0\MonoMod.RuntimeDetour.dll</HintPath>
+    </Reference>
     <Reference Include="MonoMod.Utils">
       <HintPath>..\..\MonoMod\artifacts\bin\MonoMod.Utils\$(Configuration.ToLower())_net6.0\MonoMod.Utils.dll</HintPath>
     </Reference>

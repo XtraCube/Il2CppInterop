@@ -11,10 +11,13 @@ using Il2CppInterop.Runtime.Runtime;
 using Il2CppInterop.Runtime.Runtime.VersionSpecific.MethodInfo;
 using Il2CppInterop.Runtime.Startup;
 using Microsoft.Extensions.Logging;
+using Mono.Cecil.Cil;
 using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
+using OpCode = System.Reflection.Emit.OpCode;
+using OpCodes = System.Reflection.Emit.OpCodes;
 using ValueType = Il2CppSystem.ValueType;
-using Void = Il2CppSystem.Void;
 
 namespace Il2CppInterop.HarmonySupport;
 
@@ -57,6 +60,8 @@ internal unsafe class Il2CppDetourMethodPatcher : MethodPatcher
     };
 
     private static readonly List<object> DelegateCache = new();
+    private static readonly List<object> ILHookCache = new();
+
     private INativeMethodInfoStruct modifiedNativeMethodInfo;
 
     private IDetour nativeDetour;
@@ -147,8 +152,39 @@ internal unsafe class Il2CppDetourMethodPatcher : MethodPatcher
         nativeDetour.Apply();
         modifiedNativeMethodInfo.MethodPointer = nativeDetour.OriginalTrampoline;
 
-        // TODO: Add an ILHook for the original unhollowed method to go directly to managedHookedMethod
-        // Right now it goes through three times as much interop conversion as it needs to, when being called from managed side
+        var ilHook = new ILHook(Original, Manipulator);
+        ilHook.Apply();
+
+        ILHookCache.Add(ilHook);
+
+        void Manipulator(ILContext il)
+        {
+            il.Body.Instructions.Clear();
+            il.Body.ExceptionHandlers.Clear();
+            il.Body.Variables.Clear();
+
+            var c = new ILCursor(il);
+
+            var isStatic = (Original as MethodInfo)?.IsStatic ?? false;
+            var paramCount = Original.GetParameters().Length + (isStatic ? 0 : 1);
+
+            for (var i = 0; i < paramCount; i++)
+            {
+                c.Emit(Mono.Cecil.Cil.OpCodes.Ldarg, i);
+            }
+
+            var target = il.Module.ImportReference(managedHookedMethod);
+
+            var callOp = managedHookedMethod.IsVirtual && !managedHookedMethod.IsStatic
+                ? Mono.Cecil.Cil.OpCodes.Callvirt
+                : Mono.Cecil.Cil.OpCodes.Call;
+
+            c.Emit(callOp, target);
+            c.Emit(Mono.Cecil.Cil.OpCodes.Ret);
+
+            il.Body.MaxStackSize = paramCount + 1;
+        }
+
         return managedHookedMethod;
     }
 
