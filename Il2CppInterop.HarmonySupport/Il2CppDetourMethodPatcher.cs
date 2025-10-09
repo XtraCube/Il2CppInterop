@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using MonoMod.Cil;
 using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
+using Detour = MonoMod.RuntimeDetour.Detour;
 using IDetour = Il2CppInterop.Runtime.Injection.IDetour;
 using ValueType = Il2CppSystem.ValueType;
 
@@ -58,7 +59,7 @@ internal unsafe class Il2CppDetourMethodPatcher : MethodPatcher
     };
 
     private static readonly List<object> DelegateCache = new();
-    private static readonly List<object> ILHookCache = new();
+    private static readonly List<object> DetourCache = new();
 
     private INativeMethodInfoStruct modifiedNativeMethodInfo;
 
@@ -150,38 +151,9 @@ internal unsafe class Il2CppDetourMethodPatcher : MethodPatcher
         nativeDetour.Apply();
         modifiedNativeMethodInfo.MethodPointer = nativeDetour.OriginalTrampoline;
 
-        var ilHook = new ILHook(Original, Manipulator);
-        ilHook.Apply();
-
-        ILHookCache.Add(ilHook);
-
-        void Manipulator(ILContext il)
-        {
-            il.Body.Instructions.Clear();
-            il.Body.ExceptionHandlers.Clear();
-            il.Body.Variables.Clear();
-
-            var c = new ILCursor(il);
-
-            var isStatic = (Original as MethodInfo)?.IsStatic ?? false;
-            var paramCount = Original.GetParameters().Length + (isStatic ? 0 : 1);
-
-            for (var i = 0; i < paramCount; i++)
-            {
-                c.Emit(Mono.Cecil.Cil.OpCodes.Ldarg, i);
-            }
-
-            var target = il.Module.ImportReference(managedHookedMethod);
-
-            var callOp = managedHookedMethod.IsVirtual && !managedHookedMethod.IsStatic
-                ? Mono.Cecil.Cil.OpCodes.Callvirt
-                : Mono.Cecil.Cil.OpCodes.Call;
-
-            c.Emit(callOp, target);
-            c.Emit(Mono.Cecil.Cil.OpCodes.Ret);
-
-            il.Body.MaxStackSize = paramCount + 1;
-        }
+        var detour = new Detour(Original, managedHookedMethod);
+        detour.Apply();
+        DetourCache.Add(detour);
 
         return managedHookedMethod;
     }
