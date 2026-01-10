@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Authors>knah, BepInEx et al.</Authors>
     <Description>Runtime tools for bridging .NET and Il2Cpp together</Description>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>Il2CppInterop.Runtime</RootNamespace>
     <Configurations>Debug;Release</Configurations>

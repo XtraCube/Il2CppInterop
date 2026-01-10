@@ -2,12 +2,11 @@
 
   <PropertyGroup>
     <Description>Module to allow using Harmony with Il2CppInterop assemblies</Description>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>Il2CppInterop.HarmonySupport</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\HarmonyX\Harmony\Harmony.csproj" />
     <ProjectReference Include="..\Il2CppInterop.Runtime\Il2CppInterop.Runtime.csproj" />
   </ItemGroup>
 
@@ -16,12 +15,12 @@
       <Private>false</Private>
       <HintPath>..\Il2CppInterop.Runtime\Libs\Il2Cppmscorlib.dll</HintPath>
     </Reference>
-    <Reference Include="MonoMod.RuntimeDetour">
-      <HintPath>..\..\MonoMod\artifacts\bin\MonoMod.RuntimeDetour\$(Configuration.ToLower())_net6.0\MonoMod.RuntimeDetour.dll</HintPath>
-    </Reference>
-    <Reference Include="MonoMod.Utils">
-      <HintPath>..\..\MonoMod\artifacts\bin\MonoMod.Utils\$(Configuration.ToLower())_net6.0\MonoMod.Utils.dll</HintPath>
-    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="HarmonyX" Version="2.16.0" />
+    <PackageReference Include="MonoMod.RuntimeDetour" Version="25.3.3" />
+    <PackageReference Include="MonoMod.Utils" Version="25.0.11" />
   </ItemGroup>
 
 </Project>

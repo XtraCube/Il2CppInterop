@@ -1121,11 +1121,11 @@ public static unsafe partial class ClassInjector
         var outerType = klass;
         do
         {
-            names.Push(Marshal.PtrToStringUTF8(declaringType.Name) ?? "");
+            names.Push(Marshal.PtrToStringAnsi(declaringType.Name) ?? "");
             outerType = declaringType;
         }
         while ((declaringType = UnityVersionHandler.Wrap(declaringType.DeclaringType)) != default);
-        var namespaceName = outerType.Namespace != IntPtr.Zero ? Marshal.PtrToStringUTF8(outerType.Namespace) ?? "" : "";
+        var namespaceName = outerType.Namespace != IntPtr.Zero ? Marshal.PtrToStringAnsi(outerType.Namespace) ?? "" : "";
 
         fullName.Append(namespaceName);
         if (namespaceName.Length > 0)
